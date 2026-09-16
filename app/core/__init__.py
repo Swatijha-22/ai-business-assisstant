@@ -1,0 +1,1 @@
+# Core package - Contains configuration and security utilities
