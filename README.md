@@ -34,8 +34,8 @@ This initial version provides secure PDF upload, processing, and intelligent que
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd ai-business-assistant
+   git clone https://github.com/Swatijha-22/ai-business-assisstant.git
+   cd ai-business-assisstant
    ```
 
 2. **Create virtual environment**
