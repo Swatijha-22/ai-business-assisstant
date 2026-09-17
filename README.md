@@ -69,7 +69,8 @@ Once running, visit:
 ## Documentation
 
 - **📚 [Development Journey](DEVELOPMENT_JOURNEY.md)**: Complete learning guide explaining every decision and implementation detail
-- **🔧 [Technical Summary](TECHNICAL_SUMMARY.md)**: Professional technical overview of architecture and features
+- **🔧 [Technical Summary](TECHNICAL_SUMMARY.md)**: Professional technical overview of architecture and features  
+- **📁 [Complete File Guide](Explain%20Files's%20Name-1.md)**: Detailed explanation of every file and folder in the project
 - **🔐 [Authentication Guide](AUTHENTICATION_GUIDE.md)**: Setup instructions for GitHub integration
 
 ## Development Phases
