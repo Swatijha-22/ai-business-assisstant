@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     debug: bool = False
     
     # Database settings
-    database_url: Optional[str] = None
+    database_url: Optional[str] = "sqlite:///./ai_business_assistant.db"  # Default to SQLite for development
     
     # Security settings
     secret_key: str = "your-secret-key-change-this-in-production"

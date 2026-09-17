@@ -7,42 +7,42 @@ Dependencies handle common tasks like authentication, database connections, etc.
 
 from typing import Generator
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
-# We'll import these as we create them
-# from app.db.database import get_db
-# from app.core.security import verify_token
-# from app.db.models import User
+from app.db.database import get_db
+from app.db.models import User
+from app.services.auth_service import AuthService
 
 # JWT token dependency
 security = HTTPBearer()
 
-# Database dependency - will be implemented when we set up the database
-def get_database() -> Generator:
+# Auth service instance
+auth_service = AuthService()
+
+def get_database() -> Generator[Session, None, None]:
     """
     Database dependency that provides a database session to endpoints.
-    This will be implemented when we create our database connection.
     """
-    # db = get_db()
-    # try:
-    #     yield db
-    # finally:
-    #     db.close()
-    pass
+    yield from get_db()
 
-# Authentication dependency - will be implemented with JWT
-def get_current_user():
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_database)
+) -> User:
     """
     Authentication dependency that extracts and validates the current user.
-    This will be implemented when we create our authentication system.
+    
+    Args:
+        credentials: HTTP authorization credentials (JWT token)
+        db: Database session
+        
+    Returns:
+        Current authenticated user
+        
+    Raises:
+        HTTPException: If authentication fails
     """
-    # token = Depends(security)
-    # user = verify_token(token)
-    # if not user:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_401_UNAUTHORIZED,
-    #         detail="Invalid authentication credentials"
-    #     )
-    # return user
-    pass
+    token = credentials.credentials
+    user = auth_service.get_current_user(db, token)
+    return user

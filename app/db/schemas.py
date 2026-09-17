@@ -8,7 +8,6 @@ and response serialization. These schemas ensure type safety and API documentati
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional, Dict, Any
 from datetime import datetime
-from uuid import UUID
 
 # ============================================================================
 # Authentication Schemas
@@ -26,7 +25,7 @@ class UserLogin(BaseModel):
 
 class UserResponse(BaseModel):
     """Schema for user information response"""
-    id: UUID
+    id: str
     email: str
     is_active: bool
     created_at: datetime
@@ -41,7 +40,7 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     """Schema for token payload data"""
-    user_id: Optional[UUID] = None
+    user_id: Optional[str] = None
 
 # ============================================================================
 # Document Schemas
@@ -49,7 +48,7 @@ class TokenData(BaseModel):
 
 class DocumentResponse(BaseModel):
     """Schema for document information response"""
-    id: UUID
+    id: str
     filename: str
     file_size: int
     status: str
@@ -69,7 +68,7 @@ class DocumentList(BaseModel):
 class DocumentUploadResponse(BaseModel):
     """Schema for document upload response"""
     message: str
-    document_id: UUID
+    document_id: str
     status: str
 
 # ============================================================================
@@ -89,7 +88,7 @@ class ChatResponse(BaseModel):
     
 class ChatHistory(BaseModel):
     """Schema for chat conversation history"""
-    id: UUID
+    id: str
     question: str
     answer: str
     created_at: datetime
@@ -101,7 +100,7 @@ class ChatHistoryList(BaseModel):
     """Schema for chat history list response"""
     conversations: List[ChatHistory]
     total: int
-    document_id: UUID
+    document_id: str
 
 # ============================================================================
 # Generic Response Schemas
