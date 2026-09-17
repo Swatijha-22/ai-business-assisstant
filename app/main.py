@@ -8,7 +8,7 @@ Version 1: AI Document Assistant with authentication and PDF Q&A capabilities.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import auth
+from app.api.routes import auth, documents
 from app.db.database import init_database
 
 def create_app() -> FastAPI:
@@ -51,7 +51,7 @@ def create_app() -> FastAPI:
 
     # Include API routes
     app.include_router(auth.router, prefix="/auth", tags=["authentication"])
-    # app.include_router(documents.router, prefix="/documents", tags=["documents"]) 
+    app.include_router(documents.router, prefix="/documents", tags=["documents"])
     # app.include_router(chat.router, prefix="/chat", tags=["chat"])
     
     return app

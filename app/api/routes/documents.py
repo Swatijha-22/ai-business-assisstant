@@ -2,46 +2,130 @@
 Document Management API Routes
 
 Handles PDF upload, processing, and document management.
-These endpoints will manage user documents and trigger AI processing.
+These endpoints manage user documents and trigger AI processing.
 """
 
-from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
+from fastapi import APIRouter, Depends, File, UploadFile, HTTPException, status, Query
+from typing import List
+from sqlalchemy.orm import Session
 
-# We'll import these as we create them
-# from app.api.deps import get_current_user, get_database
-# from app.db.schemas import DocumentResponse, DocumentList
-# from app.services.document_service import process_document, get_user_documents
+from app.api.deps import get_database, get_current_user
+from app.db.schemas import DocumentResponse, DocumentUploadResponse, DocumentList
+from app.db.models import User, Document
+from app.services.document_service import DocumentService
 
 router = APIRouter()
+document_service = DocumentService()
 
-@router.post("/upload")
-async def upload_document():
+@router.post("/upload", response_model=DocumentUploadResponse)
+async def upload_document(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_database)
+):
     """
     Upload and process a PDF document.
-    Will implement: file validation, PDF processing, text extraction, chunking, embedding generation.
+    
+    - **file**: PDF file to upload (max 10MB)
+    - Requires authentication (JWT token)
+    - Processes PDF and extracts text for AI processing
+    - Returns document ID and processing status
+    
+    The system will:
+    1. Validate file type and size
+    2. Store file securely
+    3. Extract text from PDF
+    4. Split text into chunks for AI processing
+    5. Store document metadata in database
     """
-    return {"message": "Document upload endpoint - to be implemented"}
+    if not file.filename:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No file provided"
+        )
+    
+    return await document_service.upload_document(file, current_user.id, db)
 
-@router.get("/")
-async def list_documents():
+@router.get("/", response_model=DocumentList)
+async def list_documents(
+    skip: int = Query(0, ge=0, description="Number of documents to skip"),
+    limit: int = Query(10, ge=1, le=100, description="Maximum number of documents to return"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_database)
+):
     """
-    Get list of user's documents.
-    Will implement: user document retrieval, pagination, filtering.
+    Get list of user's documents with pagination.
+    
+    - **skip**: Number of documents to skip (for pagination)
+    - **limit**: Maximum documents to return (1-100, default 10)
+    - Requires authentication (JWT token)
+    - Returns only documents belonging to the authenticated user
+    
+    Supports pagination for large document collections.
     """
-    return {"message": "Document list endpoint - to be implemented"}
+    documents = document_service.get_user_documents(
+        current_user.id, db, skip=skip, limit=limit
+    )
+    
+    # Get total count for pagination
+    total_count = db.query(Document).filter(Document.user_id == current_user.id).count()
+    
+    return DocumentList(
+        documents=documents,
+        total=total_count,
+        page=skip // limit + 1,
+        page_size=limit
+    )
 
-@router.get("/{document_id}")
-async def get_document():
+@router.get("/{document_id}", response_model=DocumentResponse)
+async def get_document(
+    document_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_database)
+):
     """
     Get specific document details.
-    Will implement: document retrieval, user ownership validation.
+    
+    - **document_id**: ID of the document to retrieve
+    - Requires authentication (JWT token)
+    - Returns document metadata and processing status
+    - Only returns documents owned by the authenticated user
     """
-    return {"message": "Document details endpoint - to be implemented"}
+    document = document_service.get_document_by_id(document_id, current_user.id, db)
+    
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found"
+        )
+    
+    return document
 
 @router.delete("/{document_id}")
-async def delete_document():
+async def delete_document(
+    document_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_database)
+):
     """
     Delete a document and all associated data.
-    Will implement: document deletion, cleanup of chunks and embeddings.
+    
+    - **document_id**: ID of the document to delete
+    - Requires authentication (JWT token)
+    - Deletes physical file, database record, and all associated chunks
+    - Only allows deletion of documents owned by the authenticated user
+    
+    **Warning**: This action is irreversible!
     """
-    return {"message": "Document deletion endpoint - to be implemented"}
+    success = document_service.delete_document(document_id, current_user.id, db)
+    
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found"
+        )
+    
+    return {
+        "message": "Document deleted successfully",
+        "document_id": document_id
+    }
