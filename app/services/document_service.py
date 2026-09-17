@@ -179,7 +179,7 @@ class DocumentService:
     
     async def _process_pdf(self, document: Document, db: Session) -> None:
         """
-        Process PDF file - extract text and create chunks.
+        Process PDF file - extract text, create chunks, and generate embeddings.
         
         Args:
             document: Document database record
@@ -194,17 +194,55 @@ class DocumentService:
         # Create text chunks
         chunks = self._chunk_text(text_content)
         
-        # Store chunks in database
-        for idx, chunk_data in enumerate(chunks):
-            chunk = DocumentChunk(
-                document_id=document.id,
-                chunk_text=chunk_data['text'],
-                chunk_index=idx,
-                metadata_json=str(chunk_data.get('metadata', {}))
-            )
-            db.add(chunk)
+        if not chunks:
+            raise Exception("No chunks could be created from extracted text")
         
-        db.commit()
+        print(f"📄 Created {len(chunks)} text chunks from PDF")
+        
+        # Generate embeddings for chunks
+        from app.services.embedding_service import EmbeddingService
+        embedding_service = EmbeddingService()
+        
+        try:
+            # Extract chunk texts for batch embedding generation
+            chunk_texts = [chunk['text'] for chunk in chunks]
+            embeddings = embedding_service.generate_embeddings_batch(chunk_texts)
+            
+            print(f"🔮 Generated {len(embeddings)} embeddings")
+            
+            # Store chunks with embeddings in database
+            for idx, (chunk_data, embedding) in enumerate(zip(chunks, embeddings)):
+                # Convert embedding to JSON for storage
+                embedding_json = embedding_service.embedding_to_json(embedding)
+                
+                chunk = DocumentChunk(
+                    document_id=document.id,
+                    chunk_text=chunk_data['text'],
+                    chunk_index=idx,
+                    embedding=embedding_json,
+                    metadata_json=str(chunk_data.get('metadata', {}))
+                )
+                db.add(chunk)
+            
+            db.commit()
+            print(f"✅ Stored {len(chunks)} chunks with embeddings in database")
+            
+        except Exception as e:
+            print(f"❌ Error generating embeddings: {e}")
+            # Still store chunks without embeddings so document isn't lost
+            for idx, chunk_data in enumerate(chunks):
+                chunk = DocumentChunk(
+                    document_id=document.id,
+                    chunk_text=chunk_data['text'],
+                    chunk_index=idx,
+                    embedding=None,  # No embedding due to error
+                    metadata_json=str(chunk_data.get('metadata', {}))
+                )
+                db.add(chunk)
+            
+            db.commit()
+            print(f"⚠️ Stored {len(chunks)} chunks without embeddings due to error")
+            raise Exception(f"Failed to generate embeddings: {e}")
     
     async def _extract_text_from_pdf(self, file_path: str) -> str:
         """
