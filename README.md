@@ -27,7 +27,7 @@ This initial version provides secure PDF upload, processing, and intelligent que
 ### Prerequisites
 
 - Python 3.8 or higher
-- PostgreSQL database
+- PostgreSQL database (or SQLite for development)
 - OpenAI API key (for LLM functionality)
 
 ### Installation
@@ -57,7 +57,7 @@ This initial version provides secure PDF upload, processing, and intelligent que
 
 5. **Run the application**
    ```bash
-   uvicorn app.main:app --reload
+   python run_server.py
    ```
 
 ### API Documentation
@@ -65,6 +65,12 @@ This initial version provides secure PDF upload, processing, and intelligent que
 Once running, visit:
 - **Interactive API docs**: http://localhost:8000/docs
 - **Alternative docs**: http://localhost:8000/redoc
+
+## Documentation
+
+- **📚 [Development Journey](DEVELOPMENT_JOURNEY.md)**: Complete learning guide explaining every decision and implementation detail
+- **🔧 [Technical Summary](TECHNICAL_SUMMARY.md)**: Professional technical overview of architecture and features
+- **🔐 [Authentication Guide](AUTHENTICATION_GUIDE.md)**: Setup instructions for GitHub integration
 
 ## Development Phases
 
