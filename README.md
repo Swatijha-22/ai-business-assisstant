@@ -71,6 +71,8 @@ Once running, visit:
 - **📚 [Development Journey](DEVELOPMENT_JOURNEY.md)**: Complete learning guide explaining every decision and implementation detail
 - **🔧 [Technical Summary](TECHNICAL_SUMMARY.md)**: Professional technical overview of architecture and features  
 - **📁 [Complete File Guide](Explain%20Files's%20Name-1.md)**: Detailed explanation of every file and folder in the project
+- **📄 [Phase 3 Files Guide](Phase-3%20Files's%20names-%20explanation%20and%20logics.md)**: Comprehensive explanation of all Phase 3 additions and changes
+- **📊 [Phase 3 Summary](PHASE_3_SUMMARY.md)**: Technical achievement summary for Phase 3
 - **🔐 [Authentication Guide](AUTHENTICATION_GUIDE.md)**: Setup instructions for GitHub integration
 
 ## Development Phases
